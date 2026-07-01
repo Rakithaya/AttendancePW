@@ -1,5 +1,6 @@
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { LogOut } from 'lucide-react';
 
 export default function Navbar({ onMenuClick }) {
   const { userProfile, logout, isAdmin } = useAuth();
@@ -70,7 +71,8 @@ export default function Navbar({ onMenuClick }) {
           id="navbar-logout-btn"
           title="Sign out"
         >
-          ⎋ Logout
+          <LogOut size={18} />
+          Logout
         </button>
       </div>
     </nav>

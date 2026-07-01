@@ -19,7 +19,6 @@ export default function QRKiosk() {
   const [offices, setOffices] = useState([]);
   const [selectedOffice, setSelectedOffice] = useState('');
   const [qrPayload, setQrPayload] = useState('');
-  const [currentTime, setCurrentTime] = useState(new Date());
   
   // Office management state
   const [showManager, setShowManager] = useState(false);
@@ -70,13 +69,7 @@ export default function QRKiosk() {
     }
   }, [selectedOffice]);
 
-  // Live clock
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+
 
   // Add new office
   async function handleAddOffice(e) {
@@ -133,20 +126,6 @@ export default function QRKiosk() {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   }
-
-  const timeStr = currentTime.toLocaleTimeString('en', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    hour12: true,
-  });
-
-  const dateStr = currentTime.toLocaleDateString('en', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
 
   return (
     <div className="kiosk-container" ref={containerRef}>
@@ -333,18 +312,21 @@ export default function QRKiosk() {
       )}
 
       {/* Logo */}
-      <div style={{ marginBottom: 'var(--space-lg)' }}>
-        <div style={{ fontSize: 'var(--font-3xl)', fontWeight: 800, letterSpacing: '-0.03em' }}>
-          <span className="text-gradient">Attend</span>Ease
-        </div>
-        <div style={{ fontSize: 'var(--font-sm)', color: 'var(--text-tertiary)', marginTop: '4px' }}>
-          Official Attendance Kiosk
+      <div style={{ marginBottom: 'var(--space-lg)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <img
+          src="/logo.png"
+          alt="Power World Logo"
+          style={{
+            maxWidth: '220px',
+            width: '100%',
+            height: 'auto',
+            objectFit: 'contain',
+          }}
+        />
+        <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-tertiary)', marginTop: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          Official Attendance 
         </div>
       </div>
-
-      {/* Time */}
-      <div className="kiosk-time">{timeStr}</div>
-      <div className="kiosk-date">{dateStr}</div>
 
       {/* Selected Office Label */}
       <div

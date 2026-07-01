@@ -305,10 +305,10 @@ export default function AttendanceReports() {
                     tickLine={false}
                     axisLine={false}
                   />
-                  <Tooltip content={<CustomTooltip />} />
+                  <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }} />
                   <Bar
                     dataKey="checkIns"
-                    fill="#6c5ce7"
+                    fill="#1eff00ff"
                     radius={[4, 4, 0, 0]}
                     maxBarSize={40}
                   />
