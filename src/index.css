@@ -1193,7 +1193,7 @@ tbody tr:hover {
   list-style: none;
   margin: 0;
   padding: 6px;
-  background: rgba(15, 15, 30, 0.92);
+  background: #11111e;
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid var(--border-default);
