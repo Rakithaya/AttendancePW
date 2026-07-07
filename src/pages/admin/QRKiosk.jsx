@@ -141,6 +141,35 @@ export default function QRKiosk() {
     setTimeout(() => setToast(null), 3000);
   }
 
+  const downloadQR = (officeName) => {
+    const svg = document.getElementById(`qr-svg-${officeName}`);
+    if (!svg) return;
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const svgUrl = URL.createObjectURL(svgBlob);
+    const downloadLink = document.createElement('a');
+    downloadLink.href = svgUrl;
+    downloadLink.download = `QR_${officeName.replace(/\s+/g, '_')}.svg`;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+  };
+
+  const downloadKioskQR = () => {
+    if (!selectedOffice) return;
+    const svg = document.getElementById('kiosk-qr-svg');
+    if (!svg) return;
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const svgUrl = URL.createObjectURL(svgBlob);
+    const downloadLink = document.createElement('a');
+    downloadLink.href = svgUrl;
+    downloadLink.download = `Kiosk_QR_${selectedOffice.replace(/\s+/g, '_')}.svg`;
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+  };
+
   return (
     <div className="kiosk-container" ref={containerRef}>
       {/* Toast */}
@@ -245,7 +274,79 @@ export default function QRKiosk() {
         </button>
       </div>
 
-      {/* Office Management Panel (Overlay Modal) */}
+      {/* Logo */}
+      <div style={{ marginBottom: 'var(--space-lg)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <img
+          src="/logo.png"
+          alt="Power World Logo"
+          style={{
+            maxWidth: '220px',
+            width: '100%',
+            height: 'auto',
+            objectFit: 'contain',
+          }}
+        />
+        <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-tertiary)', marginTop: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          Official Attendance 
+        </div>
+      </div>
+
+      {/* Selected Office Label */}
+      <div
+        style={{
+          marginTop: 'var(--space-md)',
+          padding: '6px 18px',
+          background: 'rgba(108, 92, 231, 0.1)',
+          border: '1px solid rgba(108, 92, 231, 0.2)',
+          borderRadius: 'var(--radius-full)',
+          fontSize: 'var(--font-sm)',
+          fontWeight: 600,
+          color: 'var(--accent-primary)',
+        }}
+      >
+        📍 {selectedOffice || 'Loading Locations...'}
+      </div>
+
+      {/* QR Code */}
+      <div className="kiosk-qr-wrapper animate-scale-in" key={qrPayload} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+        {qrPayload ? (
+          <>
+            <QRCodeSVG
+              id="kiosk-qr-svg"
+              value={qrPayload}
+              size={280}
+              level="H"
+              includeMargin={false}
+              bgColor="#ffffff"
+              fgColor="#0a0a1a"
+              style={{ width: '280px', height: '280px', display: 'block' }}
+            />
+            <button
+              className="btn btn-secondary btn-sm"
+              onClick={downloadKioskQR}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'var(--surface-2)', border: '1px solid var(--border-default)' }}
+            >
+              📥 Download QR Code
+            </button>
+          </>
+        ) : (
+          <div style={{ width: 280, height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ animation: 'spin 0.8s linear infinite', fontSize: '2rem' }}>⟳</span>
+          </div>
+        )}
+      </div>
+
+      {/* Instruction */}
+      <div className="kiosk-instruction" style={{ maxWidth: '450px', margin: 'var(--space-lg) auto 0' }}>
+         Scan this QR code with your phone camera to check in or out. Your GPS location will be verified.
+      </div>
+
+      <div style={{ marginTop: 'var(--space-xl)', display: 'flex', gap: '24px', color: 'var(--text-tertiary)', fontSize: 'var(--font-xs)' }}>
+        <div>✓ Secure Geolocation Verification</div>
+        <div>✓ {offices.length} Configured Locations</div>
+      </div>
+
+      {/* Office Management Panel (Overlay Modal) - Rendered at bottom of DOM for clean stacking hierarchy */}
       {showManager && (
         <div
           style={{
@@ -258,7 +359,7 @@ export default function QRKiosk() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 1000,
+            zIndex: 9999,
           }}
           onClick={() => setShowManager(false)}
         >
@@ -266,7 +367,6 @@ export default function QRKiosk() {
             className="glass-strong animate-scale-in"
             style={{
               width: '100%',
-              maxWidt: '440px',
               maxWidth: '440px',
               padding: 'var(--space-xl)',
               maxHeight: '80vh',
@@ -309,7 +409,7 @@ export default function QRKiosk() {
               style={{
                 overflowY: 'auto',
                 flex: 1,
-                maxHeight: '40vh',
+                maxHeight: '50vh',
                 border: '1px solid var(--border-subtle)',
                 borderRadius: 'var(--radius-md)',
                 padding: 'var(--space-sm)',
@@ -321,16 +421,39 @@ export default function QRKiosk() {
                   key={o.id}
                   className="flex items-center justify-between"
                   style={{
-                    padding: '8px 10px',
+                    padding: '12px 10px',
                     borderBottom: '1px solid var(--border-subtle)',
                     fontSize: 'var(--font-sm)',
+                    gap: 'var(--space-md)',
                   }}
                 >
-                  <span style={{ fontWeight: 500 }}>{o.name}</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)' }}>
+                    <div style={{ width: '76px', height: '76px', minWidth: '76px', background: '#fff', padding: '6px', borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'var(--shadow-sm)', flexShrink: 0 }}>
+                      <QRCodeSVG
+                        id={`qr-svg-${o.name}`}
+                        value={buildStaticQRPayload(o.name)}
+                        size={64}
+                        level="M"
+                        bgColor="#ffffff"
+                        fgColor="#0a0a1a"
+                        style={{ width: '64px', height: '64px', display: 'block' }}
+                      />
+                    </div>
+                    <div>
+                      <span style={{ fontWeight: 600, display: 'block', color: 'var(--text-primary)', marginBottom: '4px' }}>{o.name}</span>
+                      <button
+                        className="btn btn-ghost btn-sm"
+                        onClick={() => downloadQR(o.name)}
+                        style={{ color: 'var(--accent-secondary)', fontSize: 'var(--font-xs)', padding: 0, display: 'flex', alignItems: 'center', gap: '4px', textDecoration: 'underline' }}
+                      >
+                        📥 Download QR
+                      </button>
+                    </div>
+                  </div>
                   <button
                     className="btn btn-ghost btn-sm"
                     onClick={() => handleDeleteOffice(o.id, o.name)}
-                    style={{ color: 'var(--accent-danger)' }}
+                    style={{ color: 'var(--accent-danger)', padding: '6px 12px' }}
                     title="Remove location"
                   >
                     🗑
@@ -341,67 +464,6 @@ export default function QRKiosk() {
           </div>
         </div>
       )}
-
-      {/* Logo */}
-      <div style={{ marginBottom: 'var(--space-lg)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <img
-          src="/logo.png"
-          alt="Power World Logo"
-          style={{
-            maxWidth: '220px',
-            width: '100%',
-            height: 'auto',
-            objectFit: 'contain',
-          }}
-        />
-        <div style={{ fontSize: 'var(--font-xs)', color: 'var(--text-tertiary)', marginTop: '8px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-          Official Attendance 
-        </div>
-      </div>
-
-      {/* Selected Office Label */}
-      <div
-        style={{
-          marginTop: 'var(--space-md)',
-          padding: '6px 18px',
-          background: 'rgba(108, 92, 231, 0.1)',
-          border: '1px solid rgba(108, 92, 231, 0.2)',
-          borderRadius: 'var(--radius-full)',
-          fontSize: 'var(--font-sm)',
-          fontWeight: 600,
-          color: 'var(--accent-primary)',
-        }}
-      >
-        📍 {selectedOffice || 'Loading Locations...'}
-      </div>
-
-      {/* QR Code */}
-      <div className="kiosk-qr-wrapper animate-scale-in" key={qrPayload}>
-        {qrPayload ? (
-          <QRCodeSVG
-            value={qrPayload}
-            size={280}
-            level="H"
-            includeMargin={false}
-            bgColor="#ffffff"
-            fgColor="#0a0a1a"
-          />
-        ) : (
-          <div style={{ width: 280, height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ animation: 'spin 0.8s linear infinite', fontSize: '2rem' }}>⟳</span>
-          </div>
-        )}
-      </div>
-
-      {/* Instruction */}
-      <div className="kiosk-instruction" style={{ maxWidth: '450px', margin: 'var(--space-lg) auto 0' }}>
-         Scan this QR code with your phone camera to check in or out. Your GPS location will be verified.
-      </div>
-
-      <div style={{ marginTop: 'var(--space-xl)', display: 'flex', gap: '24px', color: 'var(--text-tertiary)', fontSize: 'var(--font-xs)' }}>
-        <div>✓ Secure Geolocation Verification</div>
-        <div>✓ {offices.length} Configured Locations</div>
-      </div>
     </div>
   );
 }
